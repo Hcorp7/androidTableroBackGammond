@@ -1,0 +1,35 @@
+La parte lógica lleva la información del tablero que requiere la parte gráfica para ser representado
+el juego.
+
+Exiten las casillas lógicas.
+
+La barra y las áreas de fichas fuera se gestionan gráficamente desde el Fragment. La parte lógica
+sólo sabe el número de fichas en cada una de estas tres áreas (barra, fuera negras, fuera blancas).
+De echo la parte lógica no sabe exáctamente dónde se encuentra una ficha gráfica.
+
+La parte lógica gestiona fichas lógicas que son las mismas que componen una ficha gráfica ya que una
+ficha gráfica necesita saber su identidad.
+
+No existen Casillas Gráficas. Sólo casillas lógicas. Estas indican su estado y realizan operaciones
+con sus fichas.
+
+El Gestor de Casillas Lógicas consulta a las casillas y coordina acciones entre ellas.
+
+La Lógica de Juego es la vía de comunicación del Fragment con la parte de datos de la aplicación. En
+la LJ se gestiona también lo relacionado con la asignación de recursos de imágenes y los turnos.
+
+Fragment gestiona toda la parte gráfica en respuesta a las acciones del usuario aplicando supervisadas
+por la lógica de juego.
+
+Por ejemplo:
+- Si un usuario quiere mover una ficha, Fragment preguntará a la LLJJ si es su turno.
+
+-Si el usuario mueve una ficha a una casilla, Fragment moverá la ficha, pero indicará la
+acción a la Lógica de Juego que aceptará o recharazá la acción. En consecuencia, Fragment mantendrá
+el movimiento o lo anulará regresando la ficha a su casilla de origen.
+
+
+Fragment mantiene un diálogo continuo con LLJJ informando de acciones del usuario y preguntando por
+la validez de las acciones del usuario.
+
+Los dados son gestionados por Fragment y este informa al LLJJ de su valor.

@@ -1,0 +1,10 @@
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:interpolator= "@android:anim/cycle_interpolator"
+    android:shareInterpolator="true">
+
+    <translate
+        android:duration="2000"
+        android:fromXDelta="-55"
+        android:toXDelta="155">
+    </translate>
+</set>
