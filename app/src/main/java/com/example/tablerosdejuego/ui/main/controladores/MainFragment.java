@@ -44,9 +44,9 @@ public class MainFragment extends Fragment {
     private final float mEjeYFueraBlancas = 1045f;
     private final float mEjeYFueraNegras = 45f;
     private final Vector<JSONObject> mJugada = new Vector<>();
-   // private Cubilete mCubilete;
+    // private Cubilete mCubilete;
 
-    public static MainFragment newInstance(){
+    public static MainFragment newInstance() {
         return new MainFragment();
     }
 
@@ -114,9 +114,10 @@ public class MainFragment extends Fragment {
      * de destino, que borrar el puntero en la casilla origen e instanciár una nueva ficha lógica para guardar su puntero en la
      * casilla de destino.
      */
+    @SuppressLint("ClickableViewAccessibility")
     private void creacionFichasGraficas() {
         FichaGrafica fichaGrafica;
-        HashMap<Integer, JSONObject> distribucion = mLogica.getDistribucionFichas();
+        HashMap<Integer, JSONObject> distribucion = mLogica.distribucionFichas();
         //En casillas
         for (int num_casilla = 1; num_casilla < 25; num_casilla++) {
             if (distribucion.containsKey(num_casilla)) {
@@ -129,7 +130,7 @@ public class MainFragment extends Fragment {
                     e.printStackTrace();
                 }
                 for (int lugar = 1; lugar <= total_fichas; lugar++) {
-                    fichaGrafica = new FichaGrafica(getContext(), mLogica.getGestorCasillas().getFichaLogica(num_casilla, lugar));
+                    fichaGrafica = new FichaGrafica(getContext(), mLogica.gestorCasillas().getFichaLogica(num_casilla, lugar));
                     moverACasilla(fichaGrafica, lugar);
                     fichaGrafica.setOnTouchListener(new fichaOnTouch());
                     fichaGrafica.setImageResource(mLogica.getIdRecursoFicha(colorFicha));
@@ -143,7 +144,7 @@ public class MainFragment extends Fragment {
             if (tFuera > 0) {
                 TextView contador = mEscenario.findViewById(colorFicha == ColorFicha.NEGRA ? R.id.fueraNegras : R.id.fueraBlancas);
                 for (int i = 0; i < tFuera; i++) {
-                    fichaGrafica = new FichaGrafica(getContext(), new FichaLogica(colorFicha, 0, 0));
+                    fichaGrafica = new FichaGrafica(getContext(), new FichaLogica(colorFicha, GestorCasillasLogicas.NUM_AREA_FUERA, 0));
                     fichaGrafica.setImageResource(mLogica.getIdRecursoFicha(colorFicha));
                     if (fichaGrafica.esNegra()) {
                         fichaGrafica.setY(mEjeYFueraNegras);
@@ -158,8 +159,32 @@ public class MainFragment extends Fragment {
                     fichaGrafica.ampliar(i);
                     mFichasGraficas.put(fichaGrafica.hashCode(), fichaGrafica);
                 }
-                contador.setText(Integer.toString(tFuera));
+                contador.setText(String.valueOf(tFuera));
             }
+        }
+        //En Barra
+        for (ColorFicha colorFicha : ColorFicha.values()) {
+            for (int f = 0; f < mLogica.totalEnBarra(colorFicha); f++) {
+                fichaGrafica = new FichaGrafica(getContext(), new FichaLogica(colorFicha, GestorCasillasLogicas.NUM_AREA_BARRA, 0));
+                fichaGrafica.setOnTouchListener(new fichaOnTouch());
+                fichaGrafica.setImageResource(mLogica.getIdRecursoFicha(colorFicha));
+                if (fichaGrafica.esNegra()) mFichasEnBarra.add(0, fichaGrafica.hashCode());
+                else mFichasEnBarra.add(fichaGrafica.hashCode());
+                mFichasGraficas.put(fichaGrafica.hashCode(), fichaGrafica);
+            }
+        }
+        int totBlancas = mLogica.totalEnBarra(ColorFicha.BLANCA);
+        int totNegras = mLogica.totalEnBarra(ColorFicha.NEGRA);
+        int longGrupo = (totBlancas + totNegras) * (75 + 15);
+        float x = 939.5f - (75f / 2f);
+        float y = ((mYfondo + 93) / 2f) - (longGrupo / 2f);
+        Iterator<Integer> hash = mFichasEnBarra.iterator();
+        while (hash.hasNext()) {
+            FichaGrafica fichaBarra = mFichasGraficas.get(hash.next());
+            fichaBarra.setX(x);
+            fichaBarra.setY(y);
+            fichaBarra.memorizarPosicion(x, y);
+            y += 75 + 15;
         }
     }
 
@@ -221,8 +246,8 @@ public class MainFragment extends Fragment {
     private void moverFicha(int hasCodeFicha) {
         boolean fichaMovida = false;
         FichaGrafica ficha = mFichasGraficas.get(hasCodeFicha);
-
         int numCasilla = ficha.getNumCasilla();
+
         if (!ficha.estaEnBarra()) {
             boolean esUltima = ficha.getLugar() == mLogica.totalFichasCasilla(numCasilla);
             boolean hayCaptura = mLogica.hayCasillasEnCaptura();
@@ -281,8 +306,10 @@ public class MainFragment extends Fragment {
         int num_casilla;
         num_casilla = ficha.getNumCasilla();
         if (num_casilla == 0) {
-            //mejoras-> código para fichas memorizadas en barra
-            Log.d("Hcorp", "meeeeeeeeeeeeeeeeeeeeeeeeeeeek");
+            //Aquí no debería entrar nunca.
+            String s = "Se ha entrado con número de casilla cero. Esta entrada no está implementada.";
+            Log.d("Hcorp", "MainFragment.java/moverACasilla/ " +s);
+            throw new IllegalStateException(s);
         } else {
             int factorX = num_casilla < 13 ? 13 - num_casilla : num_casilla - 12;
             x = 50 + (125 * factorX);
@@ -475,6 +502,4 @@ public class MainFragment extends Fragment {
             return true;
         }
     }
-
-
 }

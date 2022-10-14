@@ -18,7 +18,7 @@ public class FichaGrafica extends AppCompatImageView {
     public static final float AJUSTE_Y = 53f;
     public static final float CORRECCION_ESCALA = 0.053f;
     public static final float ESCALA_NORMAL = 0.8f;
-    public static final float ESCALA_MAYOR = 1.8f;
+    public static final float ESCALA_MAYOR = 1.3f;
 
     public FichaGrafica(Context context, FichaLogica fichaLogica) {
         super(context);

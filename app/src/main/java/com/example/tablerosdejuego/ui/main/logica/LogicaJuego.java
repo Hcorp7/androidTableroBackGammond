@@ -30,7 +30,7 @@ public class LogicaJuego extends AndroidViewModel {
     private int mValorMultiple;
     private ColorFicha mColorTurno;
     private boolean mOfrecerDados;
-    private MovimientosPosibles mMovimientos = new MovimientosPosibles();
+    private MovimientosPosibles mMovimientos;
 
     public LogicaJuego(@NonNull Application application) {
         super(application);
@@ -43,65 +43,14 @@ public class LogicaJuego extends AndroidViewModel {
         mEstado = EstadoJuego.ELECCION_TURNO;
     }
 
-    /**
-     * Comprueba si el jugador puede realizar o no movimientos.
-     * <p>
-     * Este método pone a cero el valor del dado con el que no sea posible realizar un movimiento.
-     *
-     * @return booleano que depende de si hay algún valor de dado con el que mover.
-     */
-    private boolean esManoBloqueada() {
-        boolean esOK = false;
-        if (hayFichasEnBarra(mColorTurno)) {  //Bloqueo no poder salir de la barra
-            for (int valorDado : new int[]{mValorDado1, mValorDado2}) {
-                if (valorDado > 0) {
-                    int casillaSalto = mColorTurno == ColorFicha.NEGRA ? valorDado : 25 - valorDado;
-                    esOK = estadoCasilla(casillaSalto).esCompatible(mColorTurno);
-                    if (!esOK) dadoACero(valorDado);
-                }
-            }
-        } else if (mGestorCasillasLogicas.puedenSalir(mColorTurno)) { // Bloqueo por no poder mover a fuera
-            for (int valorDado : new int[]{mValorDado1, mValorDado2}) {
-                if (valorDado > 0) {
-                    //Por casilla
-                    for (int columna = 6; columna > 0; columna--) {
-                        int numCasilla = mColorTurno.equals(ColorFicha.NEGRA) ? 0 : 25 - columna;
-                        boolean esCasillaPropia = estadoCasilla(numCasilla).coincideColor(mColorTurno);
-                        esOK = esCasillaPropia && columna == valorDado; //está a palo?
-                        if (!esOK)
-                            esOK = esCasillaPropia && esSaltoLegal(mColorTurno, numCasilla, valorDado); //Salto por casilla?
-
-                    }
-                }
-            }
-        } else {                                //Bloqueo por casillas bloqueadas
-            for (int valorDado : new int[]{mValorDado1, mValorDado2}) {
-                if (valorDado > 0) {
-                    for (int numCasilla = 1; numCasilla < 25; numCasilla++) {
-                        if (estadoCasilla(numCasilla).coincideColor(mColorTurno)) {
-                            esOK = esSaltoLegal(mColorTurno, numCasilla, valorDado);
-                            if (esOK) break;
-                        }
-                    }
-                    if (!esOK) dadoACero(valorDado);
-                }
-            }
-        }
-        return mValorDado1 + mValorDado2 == 0;
-    }
-
-    private void dadoACero(int valorDado) {
-        if (mValorDado1 == valorDado) mValorDado1 = 0;
-        else mValorDado2 = 0;
-    }
-
     private void establecerTurnoSalida() {
         mColorTurno = mValorDado1 > mValorDado2 ? ColorFicha.NEGRA : ColorFicha.BLANCA;
-        mEstado = EstadoJuego.EN_JUEGO;
+        mEstado = EstadoJuego.TURNO_SALIDA;
     }
 
     private void siguienteTurno() {
         mColorTurno = mColorTurno == ColorFicha.BLANCA ? ColorFicha.NEGRA : ColorFicha.BLANCA;
+        mEstado = EstadoJuego.EN_JUEGO;
         Consola.mostrar("Se establece el turno: " + mColorTurno);
     }
 
@@ -150,6 +99,7 @@ public class LogicaJuego extends AndroidViewModel {
                     int saltoIntermedio = 1;
                     while (saltoIntermedio < totSaltos && esOk) {
                         esOk = esSaltoLegal(ficha.color(), ficha.getNumCasilla(), mValorDado1 * saltoIntermedio);
+                        saltoIntermedio++;
                     }
                     Consola.mostrar("LogicaJuego/posibleAvance/Salto intermedio multiple legal:" + esOk);
                 }
@@ -197,7 +147,7 @@ public class LogicaJuego extends AndroidViewModel {
      */
     private void consumoDados(int consumo) {
         Consola.mostrar("Consumo dados/Entrada/ Tirada multiple: " + mEsTiradaMultiple + " el consumo es: " + consumo + " Dado1: " + mValorDado1 + " Dado2: " + mValorDado2 + " valorMultiple: " + mValorMultiple);
-        if (mEsTiradaMultiple) mValorMultiple -= consumo / mValorDado1;
+        if (mEsTiradaMultiple) mValorMultiple -= consumo;
         else {
             if (consumo == mValorDado1) mValorDado1 = 0;
             else if (consumo == mValorDado2) mValorDado2 = 0;
@@ -226,7 +176,7 @@ public class LogicaJuego extends AndroidViewModel {
     }
 
     private EstadoCasilla estadoCasilla(int numCasilla) {
-        return mGestorCasillasLogicas.getEstadoCasilla(numCasilla);
+        return mGestorCasillasLogicas.estadoCasilla(numCasilla);
     }
 
     public boolean fichaACasilla(FichaGrafica fichaGrafica, int numCasilla) {
@@ -297,7 +247,7 @@ public class LogicaJuego extends AndroidViewModel {
                 if (mEsTiradaMultiple) {
                     if (casillaAPalo <= mValorMultiple) {
                         int div = casillaAPalo / mValorDado1;
-                        avance = casillaAPalo % mValorDado1 == 0 ? div : div++;
+                        avance = casillaAPalo % mValorDado1 == 0 ? div : ++div; //Cuidado-> he cambiado div++ por ++div ya que avance no debería obtener
                     }
                     Consola.mostrar("LogicaJuego/avanceParaSalir/Es tirada multiple y tiene un avance de: " + avance);
 
@@ -306,7 +256,7 @@ public class LogicaJuego extends AndroidViewModel {
                     int dif2 = mValorDado2 - casillaAPalo;
                     if (dif1 < 0 && dif2 < 0) avance = mValorDado1 + mValorDado2;
                     else if (dif1 > 0 && dif2 > 0)
-                        avance = mValorDado1 < mValorDado2 ? mValorDado1 : mValorDado2; //Seleccionamos el dado de menor valor.
+                        avance = Math.min(mValorDado1, mValorDado2); //Seleccionamos el dado de menor valor.
                     else avance = dif1 > 0 ? mValorDado1 : mValorDado2;
                     Consola.mostrar("LogicaJuego/avanceParaSalir/Es tirada mixta y tiene un avance de: " + avance);
 
@@ -326,11 +276,11 @@ public class LogicaJuego extends AndroidViewModel {
         }
     }
 
-    public GestorCasillasLogicas getGestorCasillas() {
+    public GestorCasillasLogicas gestorCasillas() {
         return mGestorCasillasLogicas;
     }
 
-    public HashMap<Integer, JSONObject> getDistribucionFichas() {
+    public HashMap<Integer, JSONObject> distribucionFichas() {
         return mGestorCasillasLogicas.posicionFichas();
     }
 
@@ -347,32 +297,53 @@ public class LogicaJuego extends AndroidViewModel {
     }
 
     public int totalFichasCasilla(int numCasilla) {
-        return mGestorCasillasLogicas.getTotalFichas(numCasilla);
+        return mGestorCasillasLogicas.totalFichas(numCasilla);
     }
 
     public int totalEnBarra(ColorFicha colorFicha) {
-        return mGestorCasillasLogicas.getTotalEnBarra(colorFicha);
+        return mGestorCasillasLogicas.totalEnBarra(colorFicha);
     }
 
     public int totalFuera(ColorFicha colorFicha) {
-        return mGestorCasillasLogicas.getTotalFuera(colorFicha);
+        return mGestorCasillasLogicas.totalFuera(colorFicha);
     }
-
 
     ///////  Estos métodos se utilizan para dialogar con el cubilete
 
     public void setValorDados(int valorDado1, int valorDado2) {
         //Consola.mostrar("Se actualiza el valor de los dados a: " + valorDado1 + " y " + valorDado2);
+       /* if (mEstado == EstadoJuego.EN_JUEGO) {
+            valorDado1 = 6;
+            valorDado2 = 6;//valorDado1;
+
+            mColorTurno = ColorFicha.NEGRA;
+        }*/
         mValorDado1 = valorDado1;
         mValorDado2 = valorDado2;
         mEsTiradaMultiple = valorDado1 == valorDado2;
         mValorMultiple = mValorDado1 * 4;
-        if (mEstado == EstadoJuego.ELECCION_TURNO
-                && mValorDado1 != mValorDado2) establecerTurnoSalida();
-        mMovimientos.calcular(mGestorCasillasLogicas.posicionFichas(), mColorTurno, mValorDado1, mValorDado2, mEsTiradaMultiple);
+        if (mEstado == EstadoJuego.ELECCION_TURNO){
+            if( mValorDado1 != mValorDado2) {
+                if (true){
+                    mValorDado1 = 1;
+                    mValorDado2 = 1;
+                    mEsTiradaMultiple = mValorDado1 == mValorDado2;
+                    mValorMultiple = mValorDado1 * 4;
+                    mColorTurno = ColorFicha.NEGRA;
+                    mEstado = EstadoJuego.TURNO_SALIDA;
+                   // mMovimientos.MovimientosPosibles(mGestorCasillasLogicas.posicionFichas(), mColorTurno, mValorDado1, mValorDado2, totalEnBarra(mColorTurno));
 
+                }else establecerTurnoSalida();
+            }
+            mOfrecerDados = true;
+        }
+        mMovimientos = new MovimientosPosibles(mGestorCasillasLogicas.posicionFichas(), mColorTurno, mValorDado1, mValorDado2, totalEnBarra(mColorTurno));
+        if (mMovimientos.estaBloqueado()) {
+            mValorDado1 = 0;
+            mValorDado2 = 0;
+            siguienteTurno();
+        }
     }
-
 
     public boolean ofrecerDados() {
         return mOfrecerDados;
@@ -381,4 +352,6 @@ public class LogicaJuego extends AndroidViewModel {
     public void dadosOfrecidos() {
         mOfrecerDados = false;
     }
+
+    ///////
 }

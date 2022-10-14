@@ -1,7 +1,7 @@
 package com.example.tablerosdejuego.ui.main.enumerados;
 
 public enum EstadoJuego {
-    INICIALIZADO,
+    TURNO_SALIDA,
     ELECCION_TURNO,
     EN_JUEGO,
     CONCLUIDO;

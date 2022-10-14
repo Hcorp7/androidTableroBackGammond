@@ -63,7 +63,7 @@ public class Cubilete {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                if (mLogica.getEstadoJuego() == EstadoJuego.EN_JUEGO) {
+                if (mLogica.getEstadoJuego() != EstadoJuego.ELECCION_TURNO) {
                     //Consola.mostrar("Hilo/OfrecerDados: " + mLogica.getOfrecerDados());
                     if (mLogica.ofrecerDados()) {
                         mActivity.runOnUiThread(new Runnable() {
@@ -96,15 +96,11 @@ public class Cubilete {
             public void run() {
                 if (mDado1.tieneValor() && mDado2.tieneValor()) {
                     if (mDado1.getValor() != mDado2.getValor()) {
-                        //mLogica.setValorDados(mDado1.getValor(), mDado2.getValor());
                         //Consola.mostrar("Timer/Los dados se han reseteado.");
                         actualizarValoresEnLaLogica();
                         mActivity.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                               /* if (mLogica.getEstadoJuego() == EstadoJuego.ELECCION_TURNO)
-                                    elegirTurno();
-                                else primeraMano();*/
                                 primeraMano();
                                 //Consola.mostrar("Los dados tienen valor:" + mDado1.getValor() + " y " + mDado2.getValor());
                                 timer.cancel();
@@ -140,10 +136,6 @@ public class Cubilete {
             mDado1.animate().x(ejesX.firstElement()).setDuration(mDado1.getTiempoAnimacion());
             mDado2.animate().scaleX(escalaMedia - FichaGrafica.CORRECCION_ESCALA).scaleY(escalaMedia).x(ejesX.lastElement()).setDuration(mDado2.getTiempoAnimacion());
         }
-        emparejarDados();
-    }
-
-    private void emparejarDados() {
         mDado1.setPareja(mDado2);
         mDado2.setPareja(mDado1);
     }
@@ -172,30 +164,32 @@ public class Cubilete {
     }
 
     private void ofrecerDados(Boolean blancasMueven) {
-        ColorFicha colorFicha = blancasMueven ? ColorFicha.BLANCA : ColorFicha.NEGRA;
-        Vector<Float> ejesX = calcularEjesX(colorFicha, 2);
-        int rImagen = mLogica.getIdRecursoDado(colorFicha);
-        float escala = mDado1.getEscalaOrigen();
-        for (Dado dado:mDados) {
-            dado.animate().setDuration(600).scaleX(0).scaleY(0).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    super.onAnimationEnd(animation);
-                    dado.setImageResource(rImagen);
-                    dado.setX(ejesX.get(dado.getId()));
-                    dado.resetValor();
-                    dado.animate().setDuration(600).scaleX(escala).scaleY(escala)
-                            .setListener(new AnimatorListenerAdapter() {
-                                @Override
-                                public void onAnimationEnd(Animator animation) {
-                                    super.onAnimationEnd(animation);
-                                    dado.escalarDado();
-                                }
-                            });
-                }
-            });
+        if (mLogica.getEstadoJuego() == EstadoJuego.EN_JUEGO) {
+            ColorFicha colorFicha = blancasMueven ? ColorFicha.BLANCA : ColorFicha.NEGRA;
+            Vector<Float> ejesX = calcularEjesX(colorFicha, 2);
+            int rImagen = mLogica.getIdRecursoDado(colorFicha);
+            float escala = mDado1.getEscalaOrigen();
+            for (Dado dado : mDados) {
+                dado.animate().setDuration(600).scaleX(0).scaleY(0).setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        dado.setImageResource(rImagen);
+                        dado.setX(ejesX.get(dado.getId()));
+                        dado.resetValor();
+                        dado.animate().setDuration(600).scaleX(escala).scaleY(escala)
+                                .setListener(new AnimatorListenerAdapter() {
+                                    @Override
+                                    public void onAnimationEnd(Animator animation) {
+                                        super.onAnimationEnd(animation);
+                                        dado.escalarDado();
+                                    }
+                                });
+                    }
+                });
+            }
         }
         mLogica.dadosOfrecidos();
-        Consola.mostrar("Ofreciendo dados");
+        Consola.mostrar("Cubilete/ofrecerDados/ Los dados se han ofrecido/ ofreciendo dados");
     }
 }

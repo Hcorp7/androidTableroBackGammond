@@ -11,6 +11,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.stream.IntStream;
 
 public class GestorCasillasLogicas {
     private ArrayList<CasillaLogica> mCasillas;
@@ -22,7 +23,9 @@ public class GestorCasillasLogicas {
 
     public GestorCasillasLogicas() {
         this.mCasillas = new ArrayList<>(24);
-        for (int i = 0; i < 24; i++) mCasillas.add(new CasillaLogica(i + 1));
+        IntStream.range(1, 25).forEach(i -> {
+            mCasillas.add(new CasillaLogica(i));
+        });
         switch (1) {
             case 1: // Posición de inicio
                 agregarFichas(1, 2, ColorFicha.BLANCA);
@@ -35,8 +38,9 @@ public class GestorCasillasLogicas {
                 agregarFichas(24, 2, ColorFicha.NEGRA);
                 break;
             case 2: //Negras y blancas pueden salir
-                for (int i = 19; i < 22; i++) agregarFichas(i, 5, ColorFicha.BLANCA);
-                for (int i = 1; i < 4; i++) agregarFichas(i, 5, ColorFicha.NEGRA);
+                int filas = 3;
+                for (int i = 19; i < 19 + filas; i++) agregarFichas(i, 2, ColorFicha.BLANCA);
+                for (int i = 6; i > 6 - filas; i--) agregarFichas(i, 5, ColorFicha.NEGRA);
                 break;
             case 3: //Medio juego
                 agregarFichas(1, 2, ColorFicha.BLANCA);
@@ -49,35 +53,62 @@ public class GestorCasillasLogicas {
                 //agregarFichas(24, 2, ColorFicha.NEGRA);
                 break;
             case 4: //Blancas tiran 4-6
-                agregarFichas(1,2,ColorFicha.BLANCA);
-                agregarFichas(2,2,ColorFicha.NEGRA);
-                agregarFichas(3,2,ColorFicha.NEGRA);
-                agregarFichas(5,2,ColorFicha.NEGRA);
-                agregarFichas(6,3,ColorFicha.NEGRA);
-                agregarFichas(12,5,ColorFicha.BLANCA);
-                agregarFichas(16,2,ColorFicha.NEGRA);
-                agregarFichas(18,3,ColorFicha.BLANCA);
-                agregarFichas(19,5,ColorFicha.BLANCA);
-                agregarFichas(22,2,ColorFicha.NEGRA);
-                agregarFichas(23,2,ColorFicha.NEGRA);
+                agregarFichas(1, 2, ColorFicha.BLANCA);
+                agregarFichas(2, 2, ColorFicha.NEGRA);
+                agregarFichas(3, 2, ColorFicha.NEGRA);
+                agregarFichas(5, 2, ColorFicha.NEGRA);
+                agregarFichas(6, 3, ColorFicha.NEGRA);
+                agregarFichas(12, 5, ColorFicha.BLANCA);
+                agregarFichas(16, 2, ColorFicha.NEGRA);
+                agregarFichas(18, 3, ColorFicha.BLANCA);
+                agregarFichas(19, 5, ColorFicha.BLANCA);
+                agregarFichas(22, 2, ColorFicha.NEGRA);
+                agregarFichas(23, 2, ColorFicha.NEGRA);
                 break;
             case 5: //Blancas tiran 4-6 con fichas que pueden salir
-                agregarFichas(1,2,ColorFicha.NEGRA);
-                agregarFichas(2,2,ColorFicha.NEGRA);
-                agregarFichas(3,2,ColorFicha.NEGRA);
-                agregarFichas(4,2,ColorFicha.NEGRA);
-                agregarFichas(5,2,ColorFicha.NEGRA);
-                agregarFichas(6,3,ColorFicha.NEGRA);
-                agregarFichas(19,1,ColorFicha.BLANCA);
-                agregarFichas(20,2,ColorFicha.BLANCA);
-                agregarFichas(22,1,ColorFicha.BLANCA);
-                agregarFichas(24,2,ColorFicha.NEGRA);
+                agregarFichas(1, 2, ColorFicha.NEGRA);
+                agregarFichas(2, 2, ColorFicha.NEGRA);
+                agregarFichas(3, 2, ColorFicha.NEGRA);
+                agregarFichas(4, 2, ColorFicha.NEGRA);
+                agregarFichas(5, 2, ColorFicha.NEGRA);
+                agregarFichas(6, 3, ColorFicha.NEGRA);
+                agregarFichas(19, 1, ColorFicha.BLANCA);
+                agregarFichas(20, 2, ColorFicha.BLANCA);
+                agregarFichas(22, 1, ColorFicha.BLANCA);
+                agregarFichas(24, 2, ColorFicha.NEGRA);
+                break;
+            case 6: //Blancas tiran 4-6 -> Pueden ejecutar 4-6 5/1 3/0  o 6-4 5/0 3/0  o solo la última ?????
+                agregarFichas(23, 2, ColorFicha.NEGRA);
+                agregarFichas(22, 1, ColorFicha.BLANCA);
+                agregarFichas(20, 1, ColorFicha.BLANCA);
+                break;
+            case 7: //Cuadrante iterior bloqueado por piezas contrarias
+                for (int i = 1; i <7; i++) {
+                    agregarFichas(25-i,3,ColorFicha.BLANCA);
+                    agregarFichas(i,2,ColorFicha.NEGRA);
+                }
+                break;
+            case 8:
+                agregarFichas(1, 3, ColorFicha.NEGRA);
+                agregarFichas(2, 4, ColorFicha.NEGRA);
+                agregarFichas(5, 2, ColorFicha.NEGRA);
+                agregarFichas(6, 2, ColorFicha.NEGRA);
+                agregarFichas(7, 1, ColorFicha.BLANCA);
+                agregarFichas(10, 2, ColorFicha.NEGRA);
+                agregarFichas(12, 1, ColorFicha.BLANCA);
+                agregarFichas(17, 2, ColorFicha.BLANCA);
+                agregarFichas(18, 4, ColorFicha.BLANCA);
+                agregarFichas(20, 2, ColorFicha.BLANCA);
+                agregarFichas(22, 2, ColorFicha.BLANCA);
+                agregarFichas(23, 2, ColorFicha.NEGRA);
+                agregarFichas(24, 2, ColorFicha.BLANCA);
                 break;
         }
         for (int i = 0; i < 2; i++) {
             mTotalFuera.add(0);
             mTotalEnBarra.add(0);
         }
+
     }
 
     public FichaLogica getFichaLogica(int numCasilla, int lugar) {
@@ -173,7 +204,7 @@ public class GestorCasillasLogicas {
                     mTotalFuera.set(ordinal_color, --total);
                 }
             }
-            if (getEstadoCasilla(numCasilla) == EstadoCasilla.CAPTURA) {
+            if (estadoCasilla(numCasilla) == EstadoCasilla.CAPTURA) {
                 mCasillaEnCaptura = numCasilla;
             }
             ficha.setLugar(cDestino.getTotalFichas());
@@ -212,19 +243,19 @@ public class GestorCasillasLogicas {
         return !encontradas;
     }
 
-    protected int getTotalFichas(int numCasilla) {
+    protected int totalFichas(int numCasilla) {
         return mCasillas.get(numCasilla - 1).getTotalFichas();
     }
 
-    protected EstadoCasilla getEstadoCasilla(int numCasilla) {
+    protected EstadoCasilla estadoCasilla(int numCasilla) {
         return mCasillas.get(numCasilla - 1).getEstado();
     }
 
-    protected int getTotalEnBarra(ColorFicha colorFicha) {
+    protected int totalEnBarra(ColorFicha colorFicha) {
         return mTotalEnBarra.get(colorFicha.ordinal());
     }
 
-    protected int getTotalFuera(ColorFicha colorFicha) {
+    protected int totalFuera(ColorFicha colorFicha) {
         return mTotalFuera.get(colorFicha.ordinal());
     }
 }
